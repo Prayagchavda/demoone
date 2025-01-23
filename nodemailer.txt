@@ -1,0 +1,31 @@
+const nodemailer = require("nodemailer");
+
+module.exports.sendEmail = async function (email, message, subject) {
+	const transporter = nodemailer.createTransport({
+		service: "Gmail", // Use your email service provider here
+		auth: {
+			user: "goheluday6445@gmail.com", // Your email address
+			pass: "bypqzlyujtzqvcxx", // Your email password or application-specific password
+		},
+	});
+
+	const emailContent = `
+    <html>
+      <body>
+        <p><strong>Dear Authority,</strong></p>
+        <p>This is an email from the Sir. Your new message is:</p>
+        <p style="font-size: 24px; color: #0077FF;">${message}</p>
+      </body>
+    </html>
+  `;
+	// Define email data
+	const mailOptions = {
+		from: "udaygohel6445@gmail.com",
+		to: email, // Recipient's email address
+		subject: subject,
+		html: emailContent,
+	};
+
+	// Send the email
+	await transporter.sendMail(mailOptions);
+};

@@ -1,0 +1,79 @@
+const User = require("../models/userModel");
+const bcrypt = require("bcrypt");
+const jsonwebtoken = require("jsonwebtoken");
+require("dotenv").config();
+const signup = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    const Userpr = await User.findOne({ email });
+
+    if (Userpr) {
+      res.status(400).json({ message: "user already exist", sucess: "false" });
+    }
+
+    const newUser = new User({ name, email, password });
+
+    newUser.password = await bcrypt.hash(req.body.password, 10);
+
+    await newUser.save();
+
+    res.status(200).json({
+      message: "signup successfullyy",
+      success: "true",
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const Userpr = await User.findOne({ email });
+
+    if (!Userpr) {
+      res
+        .status(400)
+        .json({ message: "user not exist goto login", success: "false" });
+    }
+
+    const result = await bcrypt.compare(req.body.password, Userpr.password);
+
+    if (result) {
+      const jsontoekn = jsonwebtoken.sign(
+        {
+          email: Userpr.email,
+          name: Userpr.name,
+          password: Userpr.password,
+        },
+        process.env.Secretkey,
+
+        {
+          expiresIn: "9h",
+        }
+      );
+
+      const decrpt = await jsonwebtoken.verify(
+        jsontoekn,
+        process.env.Secretkey
+      );
+
+      res.status(200).json({
+        message: "login successfullyy",
+        decode: decrpt,
+        token: jsontoekn,
+        success: "true",
+      });
+    } else {
+      res
+        .status(200)
+        .json({ messsage: "your password is wrong", success: "false" });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+module.exports = { signup, login };
